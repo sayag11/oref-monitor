@@ -23,23 +23,28 @@ OREF Monitor shows the **current real-time status** for any city in Israel based
 - Default city saved to browser local storage
 - Last 6 hours of alert history for your selected city
 - Light/dark theme toggle (persisted to local storage)
+- Full transparency section explaining data sources and reliability
+
+## Running locally (required)
+
+**The Pikud Ha'Oref API is only accessible from Israeli IP addresses.** The app must be run locally on a machine located in Israel:
+
+```bash
+git clone https://github.com/sayag11/oref-monitor.git
+cd oref-monitor
+npm install
+npm start
+```
+
+Opens at [http://localhost:3000](http://localhost:3000). The local dev server includes a proxy that forwards API requests to oref.org.il through your Israeli IP.
+
+The hosted version at [oref-sepia.vercel.app](https://oref-sepia.vercel.app) will show a geo-block error because Vercel's servers are outside Israel.
 
 ## Data sources
 
 - `oref.org.il/warningMessages/alert/Alerts.json` — real-time active alerts
 - `oref.org.il/warningMessages/alert/History/AlertsHistory.json` — full alert history with all categories
 - `alerts-history.oref.org.il/Shared/Ajax/GetAlarmsHistory.aspx` — date-range history (supplementary)
-
-**Note:** The Pikud Ha'Oref API is only accessible from within Israel.
-
-## Running locally
-
-```bash
-npm install
-npm start
-```
-
-Opens at [http://localhost:3000](http://localhost:3000).
 
 ## Disclaimer
 

@@ -8,9 +8,13 @@ interface IntegrityGateProps {
 
 const OREF_URL = 'https://www.oref.org.il/';
 const RED_ALERT_URL = 'https://www.tzevaadom.co.il/';
+const REPO_URL = 'https://github.com/sayag11/oref-monitor';
 
 const FONT = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
 const V = (name: string) => `var(${name})`;
+
+const isGeoBlocked = (report: IntegrityReport): boolean =>
+  report.results.some((t) => !t.passed && t.detail.includes('403'));
 
 const IntegrityGate: React.FC<IntegrityGateProps> = ({ children }) => {
   const [state, setState] = useState<'loading' | 'passed' | 'failed'>('loading');
@@ -28,7 +32,15 @@ const IntegrityGate: React.FC<IntegrityGateProps> = ({ children }) => {
   }, [runChecks]);
 
   if (state === 'loading') {
-    return <LoadingScreen />;
+    return (
+      <ScreenWrapper>
+        <LoadingCard>
+          <Spinner aria-hidden="true" />
+          <LoadingTitle>OREF Monitor</LoadingTitle>
+          <LoadingSubtitle>מאמת מקורות נתונים מפיקוד העורף...</LoadingSubtitle>
+        </LoadingCard>
+      </ScreenWrapper>
+    );
   }
 
   if (state === 'failed' && report) {
@@ -38,88 +50,123 @@ const IntegrityGate: React.FC<IntegrityGateProps> = ({ children }) => {
   return <>{children}</>;
 };
 
-const LoadingScreen: React.FC = () => (
-  <ScreenWrapper>
-    <LoadingCard>
-      <Spinner aria-hidden="true" />
-      <LoadingTitle>מאמת מקורות נתונים...</LoadingTitle>
-      <LoadingSubtitle>
-        מוודא זמינות ודיוק הנתונים מפיקוד העורף
-      </LoadingSubtitle>
-    </LoadingCard>
-  </ScreenWrapper>
-);
-
 interface ErrorScreenProps {
   report: IntegrityReport;
   onRetry: () => void;
 }
 
-const ErrorScreen: React.FC<ErrorScreenProps> = ({ report, onRetry }) => (
-  <ScreenWrapper>
-    <ErrorCard role="alert" aria-live="assertive">
-      <ErrorIcon aria-hidden="true">⚠️</ErrorIcon>
-      <ErrorTitle>שגיאה באימות מקורות המידע</ErrorTitle>
-      <ErrorDescription>
-        המערכת לא הצליחה לאמת שהנתונים מפיקוד העורף זמינים ומדויקים.
-        לביטחונכם, השתמשו במקורות הרשמיים:
-      </ErrorDescription>
+const ErrorScreen: React.FC<ErrorScreenProps> = ({ report, onRetry }) => {
+  const geoBlocked = isGeoBlocked(report);
 
-      <LinksSection>
-        <LinkCard
-          href={OREF_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="אתר פיקוד העורף"
-          tabIndex={0}
-        >
-          <LinkIcon>🛡️</LinkIcon>
-          <LinkText>
-            <LinkTitle>אתר פיקוד העורף</LinkTitle>
-            <LinkUrl>oref.org.il</LinkUrl>
-          </LinkText>
-        </LinkCard>
+  return (
+    <ScreenWrapper>
+      <ErrorCard role="alert" aria-live="assertive">
+        <ErrorIcon aria-hidden="true">{geoBlocked ? '🌍' : '⚠️'}</ErrorIcon>
+        <ErrorTitle>
+          {geoBlocked
+            ? 'שרתי פיקוד העורף חסמו את הגישה'
+            : 'שגיאה באימות מקורות המידע'}
+        </ErrorTitle>
 
-        <LinkCard
-          href={RED_ALERT_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="צבע אדום — Red Alert"
-          tabIndex={0}
-        >
-          <LinkIcon>🔴</LinkIcon>
-          <LinkText>
-            <LinkTitle>צבע אדום — Red Alert</LinkTitle>
-            <LinkUrl>tzevaadom.co.il</LinkUrl>
-          </LinkText>
-        </LinkCard>
-      </LinksSection>
+        {geoBlocked ? (
+          <>
+            <ErrorDescription>
+              ממשקי פיקוד העורף נגישים <strong>רק מתוך ישראל</strong>.
+              השרת שמארח את האתר הזה נמצא מחוץ לישראל, ולכן הגישה לנתונים נחסמה (שגיאה 403).
+            </ErrorDescription>
 
-      <TestResultsSection>
-        <TestResultsTitle>אבחון:</TestResultsTitle>
-        {report.results.map((test, i) => (
-          <TestResultRow key={i}>
-            <TestStatus $passed={test.passed}>
-              {test.passed ? '✓' : '✗'}
-            </TestStatus>
-            <TestInfo>
-              <TestName>{test.name}</TestName>
-              <TestDetail>{test.detail}</TestDetail>
-            </TestInfo>
-          </TestResultRow>
-        ))}
-      </TestResultsSection>
+            <GeoSection>
+              <GeoTitle>איך להריץ את OREF Monitor?</GeoTitle>
+              <GeoText>
+                יש להריץ את האפליקציה <strong>מקומית על המחשב שלכם</strong> מתוך ישראל.
+                השרת המקומי מתחבר ישירות לפיקוד העורף דרך ה-IP הישראלי שלכם.
+              </GeoText>
+              <CodeBlock dir="ltr">
+                git clone {REPO_URL}.git{'\n'}
+                cd oref-monitor{'\n'}
+                npm install{'\n'}
+                npm start
+              </CodeBlock>
+              <GeoText>
+                האפליקציה תיפתח בכתובת{' '}
+                <CodeInline dir="ltr">http://localhost:3000</CodeInline>
+              </GeoText>
+            </GeoSection>
+          </>
+        ) : (
+          <ErrorDescription>
+            המערכת לא הצליחה לאמת שהנתונים מפיקוד העורף זמינים ומדויקים.
+            לביטחונכם, השתמשו במקורות הרשמיים:
+          </ErrorDescription>
+        )}
 
-      <RetryButton
-        onClick={onRetry}
-        aria-label="נסה שוב"
-        tabIndex={0}
-      >
-        נסה שוב
-      </RetryButton>
-    </ErrorCard>
-  </ScreenWrapper>
-);
+        <LinksSection>
+          {geoBlocked && <LinksSectionLabel>מקורות רשמיים:</LinksSectionLabel>}
+          <LinkCard
+            href={OREF_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="אתר פיקוד העורף"
+            tabIndex={0}
+          >
+            <LinkEmoji>🛡️</LinkEmoji>
+            <LinkText>
+              <LinkTitle>אתר פיקוד העורף</LinkTitle>
+              <LinkUrl>oref.org.il</LinkUrl>
+            </LinkText>
+          </LinkCard>
+          <LinkCard
+            href={RED_ALERT_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="צבע אדום"
+            tabIndex={0}
+          >
+            <LinkEmoji>🔴</LinkEmoji>
+            <LinkText>
+              <LinkTitle>צבע אדום — Red Alert</LinkTitle>
+              <LinkUrl>tzevaadom.co.il</LinkUrl>
+            </LinkText>
+          </LinkCard>
+          {geoBlocked && (
+            <LinkCard
+              href={REPO_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="קוד המקור ב-GitHub"
+              tabIndex={0}
+            >
+              <LinkEmoji>💻</LinkEmoji>
+              <LinkText>
+                <LinkTitle>קוד מקור — GitHub</LinkTitle>
+                <LinkUrl>github.com/sayag11/oref-monitor</LinkUrl>
+              </LinkText>
+            </LinkCard>
+          )}
+        </LinksSection>
+
+        <TestResultsSection>
+          <TestResultsTitle>אבחון:</TestResultsTitle>
+          {report.results.map((test, i) => (
+            <TestResultRow key={i}>
+              <TestStatus $passed={test.passed}>
+                {test.passed ? '✓' : '✗'}
+              </TestStatus>
+              <TestInfo>
+                <TestName>{test.name}</TestName>
+                <TestDetail>{test.detail}</TestDetail>
+              </TestInfo>
+            </TestResultRow>
+          ))}
+        </TestResultsSection>
+
+        <RetryButton onClick={onRetry} aria-label="נסה שוב" tabIndex={0}>
+          נסה שוב
+        </RetryButton>
+      </ErrorCard>
+    </ScreenWrapper>
+  );
+};
 
 const spin = keyframes`
   from { transform: rotate(0deg); }
@@ -154,15 +201,15 @@ const LoadingCard = styled.div`
 const Spinner = styled.div`
   width: 32px;
   height: 32px;
-  border: 2px solid #1e293b;
-  border-top-color: #3b82f6;
+  border: 2px solid ${V('--border-primary')};
+  border-top-color: ${V('--accent')};
   border-radius: 50%;
   animation: ${spin} 0.7s linear infinite;
 `;
 
 const LoadingTitle = styled.h2`
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 700;
   color: ${V('--text-primary')};
   margin: 0;
 `;
@@ -174,7 +221,7 @@ const LoadingSubtitle = styled.p`
 `;
 
 const ErrorCard = styled.div`
-  max-width: 480px;
+  max-width: 500px;
   width: 100%;
   background: ${V('--bg-secondary')};
   border: 1px solid #dc262630;
@@ -206,6 +253,62 @@ const ErrorDescription = styled.p`
   margin: 0;
   text-align: center;
   line-height: 1.7;
+
+  strong {
+    color: ${V('--text-secondary')};
+  }
+`;
+
+const GeoSection = styled.div`
+  width: 100%;
+  padding: 16px;
+  background: ${V('--bg-surface')};
+  border: 1px solid ${V('--border-primary')};
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+`;
+
+const GeoTitle = styled.h3`
+  font-size: 14px;
+  font-weight: 600;
+  color: ${V('--text-primary')};
+  margin: 0;
+`;
+
+const GeoText = styled.p`
+  font-size: 13px;
+  color: ${V('--text-tertiary')};
+  margin: 0;
+  line-height: 1.6;
+
+  strong {
+    color: ${V('--text-secondary')};
+  }
+`;
+
+const CodeBlock = styled.pre`
+  padding: 12px 14px;
+  background: ${V('--bg-primary')};
+  border: 1px solid ${V('--border-primary')};
+  border-radius: 8px;
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 12px;
+  color: ${V('--text-secondary')};
+  line-height: 1.8;
+  overflow-x: auto;
+  white-space: pre;
+`;
+
+const CodeInline = styled.code`
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 12px;
+  padding: 2px 6px;
+  background: ${V('--bg-primary')};
+  border: 1px solid ${V('--border-primary')};
+  border-radius: 4px;
+  color: ${V('--accent')};
 `;
 
 const LinksSection = styled.div`
@@ -213,6 +316,15 @@ const LinksSection = styled.div`
   display: flex;
   flex-direction: column;
   gap: 6px;
+`;
+
+const LinksSectionLabel = styled.span`
+  font-size: 11px;
+  font-weight: 600;
+  color: ${V('--text-muted')};
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 2px;
 `;
 
 const LinkCard = styled.a`
@@ -225,8 +337,7 @@ const LinkCard = styled.a`
   border-radius: 8px;
   text-decoration: none;
   color: inherit;
-  transition: background 0.15s, border-color 0.15s;
-  flex: 1;
+  transition: background 0.15s;
 
   &:hover {
     background: ${V('--bg-hover')};
@@ -238,7 +349,7 @@ const LinkCard = styled.a`
   }
 `;
 
-const LinkIcon = styled.span`
+const LinkEmoji = styled.span`
   font-size: 20px;
   flex-shrink: 0;
 `;
@@ -327,7 +438,7 @@ const RetryButton = styled.button`
   font-weight: 500;
   font-family: ${FONT};
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
+  transition: background 0.15s;
 
   &:hover {
     background: ${V('--bg-hover')};
