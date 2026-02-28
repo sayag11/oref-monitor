@@ -258,7 +258,7 @@ const App: React.FC = () => {
             <TransparencyBlock>
               <TransparencyLabel>קוד פתוח</TransparencyLabel>
               <TransparencyText>
-                קוד המקור של המערכת פתוח לעיון. כל הלוגיקה — כולל אופן קביעת המצב, מיזוג המקורות, ובדיקות התקינות — גלויה וניתנת לביקורת.
+                קוד המקור של המערכת פתוח לעיון ב-<a href="https://github.com/sayag11/oref-monitor" target="_blank" rel="noopener noreferrer">GitHub</a>. כל הלוגיקה — כולל אופן קביעת המצב, מיזוג המקורות, ובדיקות התקינות — גלויה וניתנת לביקורת.
               </TransparencyText>
             </TransparencyBlock>
           </TransparencyBody>
