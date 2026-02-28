@@ -14,27 +14,20 @@ const STAY_NEAR_SHELTER_PHRASE = 'להישאר בקרבת';
 
 const IS_DEV = process.env.NODE_ENV === 'development';
 
-export const URLS = {
-  alerts: IS_DEV
-    ? '/api/alerts'
-    : 'https://www.oref.org.il/warningMessages/alert/Alerts.json',
-  history: IS_DEV
-    ? '/api/history'
-    : 'https://www.oref.org.il/warningMessages/alert/History/AlertsHistory.json',
-  historyRange: IS_DEV
-    ? '/api/history-range'
-    : 'https://alerts-history.oref.org.il/Shared/Ajax/GetAlarmsHistory.aspx',
-  cities: IS_DEV
-    ? '/api/cities'
-    : 'https://alerts-history.oref.org.il/Shared/Ajax/GetDistricts.aspx?lang=he',
+const proxyUrl = (endpoint: string, extra?: string): string => {
+  if (IS_DEV) return '';
+  const base = '/api/proxy?endpoint=' + endpoint;
+  return extra ? base + '&' + extra : base;
 };
 
-const orefHeaders: Record<string, string> = IS_DEV
-  ? { Accept: 'application/json' }
-  : {
-      Accept: 'application/json',
-      'X-Requested-With': 'XMLHttpRequest',
-    };
+export const URLS = {
+  alerts: IS_DEV ? '/api/alerts' : proxyUrl('alerts'),
+  history: IS_DEV ? '/api/history' : proxyUrl('history'),
+  historyRange: IS_DEV ? '/api/history-range' : '/api/proxy?endpoint=history-range',
+  cities: IS_DEV ? '/api/cities' : proxyUrl('cities', 'lang=he'),
+};
+
+const orefHeaders: Record<string, string> = { Accept: 'application/json' };
 
 const getCityNames = (cityName: string): string[] =>
   cityName === 'גבעתיים' ? GIVATAYIM_NAMES : [cityName];
@@ -86,7 +79,8 @@ export const fetchHistoryRange = async (
   try {
     const now = new Date();
     const from = new Date(now.getTime() - hoursBack * 60 * 60 * 1000);
-    const url = `${URLS.historyRange}?lang=he&fromDate=${formatDateParam(from)}&toDate=${formatDateParam(now)}&mode=0`;
+    const separator = URLS.historyRange.includes('?') ? '&' : '?';
+    const url = `${URLS.historyRange}${separator}lang=he&fromDate=${formatDateParam(from)}&toDate=${formatDateParam(now)}&mode=0`;
     const response = await fetch(url, {
       headers: orefHeaders,
       signal: controller.signal,
