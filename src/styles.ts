@@ -2,11 +2,12 @@ import styled, { keyframes, css } from 'styled-components';
 import { AlertStatus } from './types';
 
 const STATUS_COLORS: Record<AlertStatus, { glow: string; text: string }> = {
-  safe:           { glow: '#22c55e', text: '#22c55e' },
-  near_shelter:   { glow: '#06b6d4', text: '#06b6d4' },
-  pre_alert:      { glow: '#eab308', text: '#eab308' },
-  go_to_shelter:  { glow: '#f97316', text: '#f97316' },
-  in_shelter:     { glow: '#ef4444', text: '#ef4444' },
+  safe:              { glow: '#22c55e', text: '#22c55e' },
+  near_shelter:      { glow: '#06b6d4', text: '#06b6d4' },
+  pre_alert:         { glow: '#eab308', text: '#eab308' },
+  go_to_shelter:     { glow: '#f97316', text: '#f97316' },
+  in_shelter:        { glow: '#ef4444', text: '#ef4444' },
+  connection_lost:   { glow: '#a855f7', text: '#a855f7' },
 };
 
 const pulse = keyframes`

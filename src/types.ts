@@ -3,7 +3,8 @@ export type AlertStatus =
   | 'near_shelter'
   | 'pre_alert'
   | 'go_to_shelter'
-  | 'in_shelter';
+  | 'in_shelter'
+  | 'connection_lost';
 
 export interface OrefAlert {
   cat: string;

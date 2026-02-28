@@ -11,6 +11,8 @@ import {
 const POLL_INTERVAL = 5000;
 const HISTORY_POLL_INTERVAL = 15000;
 const HOURS_BACK = 6;
+const MAX_CONSECUTIVE_FAILURES = 3;
+const STALE_THRESHOLD_MS = 60 * 1000;
 
 interface UseAlertsReturn {
   status: AlertStatus | null;
@@ -32,6 +34,8 @@ export const useAlerts = (cityName: string): UseAlertsReturn => {
   const fullHistoryRef = useRef<HistoryAlert[]>([]);
   const rangeHistoryRef = useRef<HistoryAlert[]>([]);
   const historyLoadedRef = useRef(false);
+  const consecutiveFailuresRef = useRef(0);
+  const lastSuccessRef = useRef<number>(0);
 
   const loadHistory = useCallback(async () => {
     const fullPromise = fetchFullHistory();
@@ -39,9 +43,15 @@ export const useAlerts = (cityName: string): UseAlertsReturn => {
 
     const [full, range] = await Promise.all([fullPromise, rangePromise]);
 
+    if (full.length === 0) {
+      throw new Error('Empty history response');
+    }
+
     fullHistoryRef.current = full;
     rangeHistoryRef.current = range;
-    historyLoadedRef.current = full.length > 0;
+    historyLoadedRef.current = true;
+    consecutiveFailuresRef.current = 0;
+    lastSuccessRef.current = Date.now();
     return { full, range };
   }, []);
 
@@ -62,6 +72,11 @@ export const useAlerts = (cityName: string): UseAlertsReturn => {
     []
   );
 
+  const markConnectionLost = useCallback((msg: string) => {
+    setError(msg);
+    setStatus('connection_lost');
+  }, []);
+
   useEffect(() => {
     if (!cityName) return;
     let cancelled = false;
@@ -70,25 +85,18 @@ export const useAlerts = (cityName: string): UseAlertsReturn => {
     setLastChecked(null);
     setCityHistory([]);
     setError(null);
+    consecutiveFailuresRef.current = 0;
 
     const init = async () => {
       try {
         await loadHistory();
         if (cancelled) return;
-
-        if (!historyLoadedRef.current) {
-          setError('לא התקבלו נתונים מפיקוד העורף — ייתכן שאתם מחוץ לישראל.');
-          setStatus('safe');
-          return;
-        }
-
         computeAndSetStatus(cityName);
         setLastChecked(new Date());
         setError(null);
       } catch {
         if (!cancelled) {
-          setError('לא ניתן להתחבר לשרתי פיקוד העורף.');
-          setStatus('safe');
+          markConnectionLost('לא ניתן להתחבר לשרתי פיקוד העורף.');
         }
       }
     };
@@ -99,15 +107,32 @@ export const useAlerts = (cityName: string): UseAlertsReturn => {
       if (cancelled) return;
       try {
         await loadHistory();
-        if (!cancelled) computeAndSetStatus(cityName);
-      } catch { /* keep previous data */ }
+        if (!cancelled) {
+          computeAndSetStatus(cityName);
+          setLastChecked(new Date());
+          setError(null);
+        }
+      } catch {
+        if (cancelled) return;
+        consecutiveFailuresRef.current++;
+        const sinceLastSuccess = Date.now() - lastSuccessRef.current;
+
+        if (
+          consecutiveFailuresRef.current >= MAX_CONSECUTIVE_FAILURES ||
+          (lastSuccessRef.current > 0 && sinceLastSuccess > STALE_THRESHOLD_MS)
+        ) {
+          markConnectionLost(
+            `החיבור לפיקוד העורף נותק (${consecutiveFailuresRef.current} ניסיונות כושלים).`
+          );
+        }
+      }
     }, HISTORY_POLL_INTERVAL);
 
     return () => {
       cancelled = true;
       clearInterval(historyInterval);
     };
-  }, [cityName, loadHistory, computeAndSetStatus]);
+  }, [cityName, loadHistory, computeAndSetStatus, markConnectionLost]);
 
   const pollAlerts = useCallback(async () => {
     if (!cityName || !historyLoadedRef.current) return;
@@ -135,12 +160,24 @@ export const useAlerts = (cityName: string): UseAlertsReturn => {
       setLastAlert(newLastAlert);
       setLastChecked(new Date());
       setError(null);
+      consecutiveFailuresRef.current = 0;
+      lastSuccessRef.current = Date.now();
     } catch {
-      setError('לא ניתן להתחבר לשרתי פיקוד העורף.');
+      consecutiveFailuresRef.current++;
+      const sinceLastSuccess = Date.now() - lastSuccessRef.current;
+
+      if (
+        consecutiveFailuresRef.current >= MAX_CONSECUTIVE_FAILURES ||
+        (lastSuccessRef.current > 0 && sinceLastSuccess > STALE_THRESHOLD_MS)
+      ) {
+        markConnectionLost(
+          `החיבור לפיקוד העורף נותק (${consecutiveFailuresRef.current} ניסיונות כושלים).`
+        );
+      }
     } finally {
       setIsPolling(false);
     }
-  }, [cityName]);
+  }, [cityName, markConnectionLost]);
 
   useEffect(() => {
     if (!cityName) return;
