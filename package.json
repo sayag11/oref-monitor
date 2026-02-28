@@ -13,6 +13,7 @@
     "@types/react-dom": "^19.2.3",
     "@types/styled-components": "^5.1.36",
     "concurrently": "^9.2.1",
+    "express": "^5.2.1",
     "http-proxy-middleware": "^2.0.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
@@ -26,8 +27,9 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d build"
+    "serve": "node server.js",
+    "tunnel": "npx localtunnel --port 3001 --subdomain oref-monitor",
+    "prod": "npm run build && concurrently \"npm run serve\" \"npm run tunnel\""
   },
   "eslintConfig": {
     "extends": [
@@ -46,8 +48,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "devDependencies": {
-    "gh-pages": "^6.3.0"
   }
 }

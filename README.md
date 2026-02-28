@@ -25,9 +25,11 @@ OREF Monitor shows the **current real-time status** for any city in Israel based
 - Light/dark theme toggle (persisted to local storage)
 - Full transparency section explaining data sources and reliability
 
-## Running locally (required)
+## Running
 
-**The Pikud Ha'Oref API is only accessible from Israeli IP addresses.** The app must be run locally on a machine located in Israel:
+**The Pikud Ha'Oref API is only accessible from Israeli IP addresses.** The app must be run on a machine located in Israel.
+
+### Development (hot reload)
 
 ```bash
 git clone https://github.com/sayag11/oref-monitor.git
@@ -36,9 +38,37 @@ npm install
 npm start
 ```
 
-Opens at [http://localhost:3000](http://localhost:3000). The local dev server includes a proxy that forwards API requests to oref.org.il through your Israeli IP.
+Opens at [http://localhost:3000](http://localhost:3000).
 
-The hosted version at [oref-sepia.vercel.app](https://oref-sepia.vercel.app) will show a geo-block error because Vercel's servers are outside Israel.
+### Production (public URL)
+
+Build and serve with a public tunnel in one command:
+
+```bash
+npm run prod
+```
+
+This builds the React app, starts the Express production server on port 3001, and opens a public tunnel at:
+
+**https://oref-monitor.loca.lt**
+
+Anyone with this link can access the app — the data flows through your Israeli machine.
+
+You can also run the steps separately:
+
+```bash
+npm run build        # build the React app
+npm run serve        # start production server on port 3001
+npm run tunnel       # expose port 3001 via localtunnel
+```
+
+## Architecture
+
+The app runs a local Express server that does two things:
+1. Serves the built React frontend
+2. Proxies `/api/*` requests to oref.org.il through your Israeli IP
+
+A [localtunnel](https://localtunnel.me) creates a public HTTPS URL that tunnels traffic to your local server.
 
 ## Data sources
 

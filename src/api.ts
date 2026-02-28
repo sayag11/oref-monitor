@@ -12,19 +12,11 @@ const SHELTER_RUN_SECONDS = 90;
 
 const STAY_NEAR_SHELTER_PHRASE = 'להישאר בקרבת';
 
-const IS_DEV = process.env.NODE_ENV === 'development';
-
-const proxyUrl = (endpoint: string, extra?: string): string => {
-  if (IS_DEV) return '';
-  const base = '/api/proxy?endpoint=' + endpoint;
-  return extra ? base + '&' + extra : base;
-};
-
 export const URLS = {
-  alerts: IS_DEV ? '/api/alerts' : proxyUrl('alerts'),
-  history: IS_DEV ? '/api/history' : proxyUrl('history'),
-  historyRange: IS_DEV ? '/api/history-range' : '/api/proxy?endpoint=history-range',
-  cities: IS_DEV ? '/api/cities' : proxyUrl('cities', 'lang=he'),
+  alerts: '/api/alerts',
+  history: '/api/history',
+  historyRange: '/api/history-range',
+  cities: '/api/cities',
 };
 
 const orefHeaders: Record<string, string> = { Accept: 'application/json' };
@@ -79,8 +71,7 @@ export const fetchHistoryRange = async (
   try {
     const now = new Date();
     const from = new Date(now.getTime() - hoursBack * 60 * 60 * 1000);
-    const separator = URLS.historyRange.includes('?') ? '&' : '?';
-    const url = `${URLS.historyRange}${separator}lang=he&fromDate=${formatDateParam(from)}&toDate=${formatDateParam(now)}&mode=0`;
+    const url = `${URLS.historyRange}?lang=he&fromDate=${formatDateParam(from)}&toDate=${formatDateParam(now)}&mode=0`;
     const response = await fetch(url, {
       headers: orefHeaders,
       signal: controller.signal,
