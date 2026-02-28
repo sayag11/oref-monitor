@@ -30,7 +30,7 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "serve": "node server.js",
-    "tunnel": "npx localtunnel --port 3001 --subdomain oref-monitor",
+    "tunnel": "npx cloudflared tunnel --url http://localhost:3001",
     "prod": "npm run build && concurrently \"npm run serve\" \"npm run tunnel\""
   },
   "eslintConfig": {
