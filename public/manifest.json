@@ -1,6 +1,7 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "OREF Monitor",
+  "name": "OREF Monitor — מצב נוכחי בזמן אמת",
+  "description": "Real-time alert status monitor for Israel's Home Front Command (Pikud Ha'Oref). Shows current shelter status for any city in Israel.",
   "icons": [
     {
       "src": "favicon.ico",
@@ -20,6 +21,8 @@
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "theme_color": "#06060b",
+  "background_color": "#06060b",
+  "lang": "he",
+  "dir": "rtl"
 }
