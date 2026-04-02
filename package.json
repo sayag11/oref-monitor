@@ -31,7 +31,11 @@
     "eject": "react-scripts eject",
     "serve": "node server.js",
     "tunnel": "npx cloudflared tunnel --url http://localhost:3001",
-    "prod": "npm run build && concurrently \"npm run serve\" \"npm run tunnel\""
+    "tunnel:named": "npx cloudflared tunnel --config cloudflared/config.yml run",
+    "tunnel:token": "npx cloudflared tunnel run --token %CLOUDFLARE_TUNNEL_TOKEN%",
+    "prod": "npm run build && concurrently \"npm run serve\" \"npm run tunnel\"",
+    "prod:domain": "npm run build && concurrently \"npm run serve\" \"npm run tunnel:named\"",
+    "prod:token": "npm run build && concurrently \"npm run serve\" \"npm run tunnel:token\""
   },
   "eslintConfig": {
     "extends": [

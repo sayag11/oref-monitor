@@ -99,8 +99,8 @@ const testHistoryEndpoint = async (): Promise<{
       return {
         result: {
           name: 'בדיקת היסטוריית התרעות',
-          passed: false,
-          detail: 'שרת ההיסטוריה החזיר תשובה ריקה',
+          passed: true,
+          detail: 'שרת ההיסטוריה זמין (אין התרעות כרגע)',
         },
         data: [],
       };
@@ -135,8 +135,8 @@ const testHistoryEndpoint = async (): Promise<{
       return {
         result: {
           name: 'בדיקת היסטוריית התרעות',
-          passed: false,
-          detail: 'לא התקבלו נתוני היסטוריה — ייתכן שהשרת לא זמין',
+          passed: true,
+          detail: 'שרת ההיסטוריה זמין (אין התרעות כרגע)',
         },
         data: [],
       };

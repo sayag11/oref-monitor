@@ -706,3 +706,96 @@ export const TransparencyDivider = styled.hr`
   border-top: 1px solid ${V('--border-subtle')};
   margin: 2px 0;
 `;
+
+export const FamilyGrid = styled.section`
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+
+  @media (max-width: 440px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+export const FamilyCard = styled.div<{ $status: AlertStatus | null }>`
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: ${V('--bg-secondary')};
+  border: 1px solid ${(p) =>
+    p.$status ? `${STATUS_COLORS[p.$status].glow}25` : V('--border-subtle')};
+  transition: all 0.35s ease;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 1px;
+    background: ${(p) =>
+      p.$status
+        ? `linear-gradient(90deg, transparent, ${STATUS_COLORS[p.$status].glow}50, transparent)`
+        : 'transparent'};
+  }
+
+  ${(p) =>
+    p.$status &&
+    p.$status !== 'safe' &&
+    p.$status !== 'near_shelter' &&
+    css`
+      animation: ${shake} 0.5s ease-in-out;
+    `}
+`;
+
+export const FamilyCardIcon = styled.span<{ $status: AlertStatus | null }>`
+  font-size: 22px;
+  line-height: 1;
+
+  ${(p) =>
+    p.$status &&
+    p.$status !== 'safe' &&
+    css`
+      animation: ${pulse} 2s ease-in-out infinite;
+    `}
+`;
+
+export const FamilyCardLabel = styled.span`
+  font-size: 12px;
+  font-weight: 600;
+  color: ${V('--text-primary')};
+  text-align: center;
+`;
+
+export const FamilyCardCity = styled.span`
+  font-size: 10px;
+  color: ${V('--text-muted')};
+  font-weight: 400;
+  text-align: center;
+  direction: rtl;
+`;
+
+export const FamilyCardStatus = styled.span<{ $status: AlertStatus | null }>`
+  font-size: 11px;
+  font-weight: 600;
+  color: ${(p) =>
+    p.$status ? STATUS_COLORS[p.$status].text : V('--text-faint')};
+  text-align: center;
+  line-height: 1.4;
+`;
+
+export const FamilyCardSpinner = styled.div`
+  width: 16px;
+  height: 16px;
+  border: 2px solid ${V('--border-primary')};
+  border-top-color: ${V('--accent')};
+  border-radius: 50%;
+  animation: ${spin} 0.7s linear infinite;
+`;

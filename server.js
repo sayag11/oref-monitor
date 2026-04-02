@@ -9,6 +9,9 @@ const BUILD_DIR = path.join(__dirname, 'build');
 
 const app = express();
 
+// Cloudflare Tunnel / reverse proxy: use real client IP for rate limits
+app.set('trust proxy', 1);
+
 // ─── Disable fingerprinting ─────────────────────────────────────────
 app.disable('x-powered-by');
 

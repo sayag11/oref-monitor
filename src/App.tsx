@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import CitySearch from './CitySearch';
 import StatusDisplay from './StatusDisplay';
+import FamilyDashboard from './FamilyDashboard';
 import DefaultCitySelector, { getStoredCity, storeCity } from './DefaultCitySelector';
 import { useAlerts } from './useAlerts';
 import { useTheme } from './ThemeContext';
@@ -132,6 +133,8 @@ const App: React.FC = () => {
       </Header>
 
       <MainContent>
+        <FamilyDashboard />
+
         <CitySearch
           cities={cities}
           selectedCity={selectedCity}

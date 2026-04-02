@@ -1,0 +1,43 @@
+Persistent URL for sayag.org (Cloudflare Tunnel)
+================================================
+
+Prerequisites
+-------------
+- sayag.org uses Cloudflare nameservers (domain on a Cloudflare account).
+- This app is built (npm run build) and server runs on port 3001.
+
+Easiest: dashboard + token (no config.yml)
+-------------------------------------------
+1. Cloudflare Dashboard → Zero Trust (may enable free Zero Trust once).
+2. Networks → Connectors → Cloudflare Tunnels → Create a tunnel.
+3. Name it (e.g. oref-sayag). Choose "Deploy a connector" / Docker or install.
+4. Public hostname #1: Domain sayag.org → Path (empty) → Service http://localhost:3001
+5. Public hostname #2: Domain www.sayag.org → Service http://localhost:3001
+   (Dashboard creates DNS for you if the zone is on Cloudflare.)
+6. Copy the "tunnel run" command token (or the token shown after creation).
+
+On the PC that runs the app (PowerShell):
+
+  $env:CLOUDFLARE_TUNNEL_TOKEN="<paste token here>"
+  npm run prod:token
+
+Or set CLOUDFLARE_TUNNEL_TOKEN in System environment variables for a permanent service.
+
+Alternative: config.yml + credentials file
+------------------------------------------
+1. npx cloudflared tunnel create oref-sayag
+2. Copy %USERPROFILE%\.cloudflared\<UUID>.json to:
+   cloudflared\oref-tunnel-credentials.json
+3. Copy cloudflared\config.yml.example to cloudflared\config.yml
+4. Edit config.yml: set tunnel: to the UUID; keep credentials-file as ./oref-tunnel-credentials.json
+5. npx cloudflared tunnel route dns oref-sayag sayag.org
+   npx cloudflared tunnel route dns oref-sayag www.sayag.org
+6. npm run prod:domain
+
+Scripts
+-------
+prod          = build + serve + quick trycloudflare URL (ephemeral)
+prod:domain   = build + serve + named tunnel (needs cloudflared/config.yml)
+prod:token    = build + serve + token tunnel (needs CLOUDFLARE_TUNNEL_TOKEN)
+
+Stop whichever prod:* process is running before starting another.

@@ -1,0 +1,21 @@
+# Copy to config.yml (gitignored) and fill in your tunnel UUID + credentials path.
+#
+# Create tunnel (once), from repo root:
+#   npx cloudflared tunnel create oref-sayag
+# That prints a UUID and writes %USERPROFILE%\.cloudflared\<UUID>.json
+#
+# Route DNS (if sayag.org is on Cloudflare — run once per hostname):
+#   npx cloudflared tunnel route dns oref-sayag sayag.org
+#   npx cloudflared tunnel route dns oref-sayag www.sayag.org
+#
+# Or add Public hostnames in: Zero Trust → Networks → Tunnels → your tunnel.
+
+tunnel: REPLACE_WITH_TUNNEL_UUID
+credentials-file: ./oref-tunnel-credentials.json
+
+ingress:
+  - hostname: sayag.org
+    service: http://localhost:3001
+  - hostname: www.sayag.org
+    service: http://localhost:3001
+  - service: http_status:404

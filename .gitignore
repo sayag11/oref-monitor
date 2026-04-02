@@ -23,3 +23,7 @@ yarn-debug.log*
 yarn-error.log*
 
 .vercel
+
+# Cloudflare named tunnel (credentials); keep example only in git
+/cloudflared/config.yml
+/cloudflared/*.json
